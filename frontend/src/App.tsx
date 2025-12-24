@@ -338,7 +338,6 @@ async function getEntries(userId: string): Promise<NotebookEntry[]> {
     method: "GET",
     headers: {
       "content-type": "application/json",
-      userId,
     },
   };
 
