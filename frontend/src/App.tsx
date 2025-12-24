@@ -19,7 +19,7 @@ const displayDateFormat = new Intl.DateTimeFormat(undefined, {
   day: "numeric",
 });
 
-const BASE_URL = `${import.meta.env.VITE_THANKFUL_BACKEND_BASE_URL ?? "localhost:3000/api"}`;
+const BASE_URL = import.meta.env.VITE_THANKFUL_BACKEND_BASE_URL ?? "http://localhost:3000/api"
 
 // const SEARCH_THRESHOLD = 0.8;
 
@@ -38,6 +38,7 @@ type ControlState = {
   userId: string;
   inputText: string;
   entries: NotebookEntry[];
+  loaded: boolean;
 };
 
 type ControlStateUpdate = ((
@@ -51,6 +52,7 @@ export default function App() {
     userId: "",
     inputText: "",
     entries: [],
+    loaded: false,
   } as ControlState);
   const ref = useRef(null);
   const scrollYProgressByDate = useRef(new Map<string, MotionValue<number>>());
@@ -70,6 +72,7 @@ export default function App() {
         userId,
         inputText: "",
         entries,
+        loaded: true,
       }));
     };
     setupKey();
@@ -97,7 +100,7 @@ export default function App() {
     />
   ));
 
-  return (
+  return control.loaded ? (
     <>
       <motion.div ref={ref} className="dummy-card-container-view">
         <div style={{ height: "calc(50vh - var(--card-height) / 2)" }} />
@@ -110,6 +113,8 @@ export default function App() {
       </motion.div>
       {dayTables}
     </>
+  ) : (
+    <></>
   );
 }
 
