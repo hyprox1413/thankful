@@ -19,7 +19,7 @@ const displayDateFormat = new Intl.DateTimeFormat(undefined, {
   day: "numeric",
 });
 
-const BASE_URL = process.env.THANKFUL_BACKEND_BASE_URL;
+const BASE_URL = `${import.meta.env.VITE_THANKFUL_BACKEND_BASE_URL ?? "localhost:3000/api"}`;
 
 // const SEARCH_THRESHOLD = 0.8;
 
