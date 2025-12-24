@@ -8,7 +8,7 @@ import {
 import { useState, useRef, useEffect } from "react";
 import "./App.css";
 import type { NotebookEntry } from "./utils.tsx";
-// import * as utils from "./utils.tsx";
+import { getKeyString, encryptTitle, decryptTitle } from "./utils.tsx";
 
 const currentDate = new Date();
 const placeholderDate = new Date(1900);
@@ -259,16 +259,12 @@ function InputRow({
       body: JSON.stringify({ title: await encryptTitle(control.inputText) }), // for future reference, you forgot to await this
     };
 
-    console.log(encryptTitle(control.inputText));
-
     const response = await fetch(
       `${BASE_URL}/users/${control.userId}/new-entry`,
       options,
     );
 
     if (response.ok) {
-      const data = await response.json();
-      console.log(data);
       const entries = await getEntries(control.userId);
       setControl((prev: ControlState) => ({
         ...prev,
@@ -360,76 +356,6 @@ async function getEntries(userId: string): Promise<NotebookEntry[]> {
 
   console.log("Entries retrieval failed.");
   return [];
-}
-
-async function getKeyString() {
-  const storedKey = localStorage.getItem("key");
-  if (storedKey) {
-    return storedKey;
-  }
-  const key = await window.crypto.subtle.generateKey(
-    {
-      name: "AES-GCM",
-      length: 256,
-    },
-    true,
-    ["encrypt", "decrypt"],
-  );
-  console.log(key);
-  const jwk = await window.crypto.subtle.exportKey("jwk", key);
-  const keyString = JSON.stringify(jwk);
-  localStorage.setItem("key", keyString);
-  return keyString;
-}
-
-async function getKey() {
-  const keyString = await getKeyString();
-  const key = await window.crypto.subtle.importKey(
-    "jwk",
-    JSON.parse(keyString),
-    { name: "AES-GCM", length: 256 },
-    true,
-    ["encrypt", "decrypt"],
-  );
-  return key;
-}
-
-interface EncryptedTitle {
-  iv: number[];
-  ciphertext: number[];
-}
-
-async function encryptTitle(title: string) {
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-  const encoder = new TextEncoder();
-
-  const key = await getKey();
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: "AES-GCM", iv },
-    key,
-    encoder.encode(title),
-  );
-
-  return JSON.stringify({
-    iv: Array.from(iv),
-    ciphertext: Array.from(new Uint8Array(ciphertext)),
-  });
-}
-
-async function decryptTitle(encryptedTitle: string) {
-  const { iv, ciphertext } = JSON.parse(encryptedTitle) as EncryptedTitle;
-  const decoder = new TextDecoder();
-
-  const key = await getKey();
-  const plaintext = await crypto.subtle.decrypt(
-    { name: "AES-GCM", iv: new Uint8Array(iv) },
-    key,
-    new Uint8Array(ciphertext),
-  );
-
-  console.log(decoder.decode(plaintext));
-
-  return decoder.decode(plaintext);
 }
 
 // function ComparisonTable({
