@@ -1,13 +1,11 @@
 import { Client } from "pg";
 import { createSemanticDiagnosticsBuilderProgram } from "typescript";
 
-const postgresPassword = process.env.POSTGRES_PASSWORD ?? "password";
-
 // hardcode for now
 const client = new Client({
   user: "thankful",
-  password: postgresPassword,
-  host: "db",
+  password: process.env.POSTGRES_PASSWORD ?? "password",
+  host: process.env.POSTGRES_HOST ?? "db",
   port: 5432,
   database: "thankful",
 });
