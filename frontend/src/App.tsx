@@ -194,12 +194,6 @@ function Card({
   const zIndex = useTransform(() => (scrollYProgress.get() ? index : -index));
   
   const date = new Date(dateStringISO);
-  const options = {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  };
   const dateStringLocal = displayDateFormat.format(date);
 
   return (
