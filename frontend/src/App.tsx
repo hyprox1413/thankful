@@ -19,7 +19,7 @@ const displayDateFormat = new Intl.DateTimeFormat(undefined, {
   day: "numeric",
 });
 
-const BASE_URL = "http://localhost:3000/api";
+const BASE_URL = process.env.THANKFUL_BACKEND_BASE_URL;
 
 // const SEARCH_THRESHOLD = 0.8;
 
