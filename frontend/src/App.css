@@ -112,3 +112,33 @@ input:focus {
     left: 3rem;
     position: absolute;
 }
+
+.placeholder-card {
+    width: var(--card-width);
+    height: var(--card-height);
+    box-sizing: border-box;
+    position: absolute;
+    
+    background-color: rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(10px);
+    border-style: dashed;
+    border-color: #C0C0C0;
+    
+    display: grid;
+    place-items: center;
+    
+    top: calc(40% - var(--card-height) / 2);
+    left: calc(50% - var(--card-width) / 2);
+    
+    transform-style: preserve-3d;
+    --line-padding: 0.6rem;
+    --line-left-padding: 3rem;
+}
+
+.placeholder-card-text {
+    text-align: center;
+    text-wrap: balance;
+    font-size: 1rem;
+    color: #101010;
+}

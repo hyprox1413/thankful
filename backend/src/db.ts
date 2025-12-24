@@ -48,7 +48,7 @@ if (version < 1) {
   await client.query(`CREATE TABLE IF NOT EXISTS notebook_entries (
     id SERIAL PRIMARY KEY,
     user_id TEXT NOT NULL,
-    title VARCHAR(50) NOT NULL,
+    title TEXT NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     deleted_at TIMESTAMP WITH TIME ZONE

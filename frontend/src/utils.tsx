@@ -1,4 +1,3 @@
-
 export interface NotebookEntry {
   id: string;
   user_id: string;
@@ -30,7 +29,6 @@ export function findMatches(
   threshold: number,
 ) {
   return entries.filter(
-    (e) =>
-      editDistance(inputText, e.title) <= e.title.length * (1 - threshold),
+    (e) => editDistance(inputText, e.title) <= e.title.length * (1 - threshold),
   );
 }

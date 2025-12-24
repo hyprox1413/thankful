@@ -58,7 +58,7 @@ export default function App() {
   useEffect(() => {
     const setupKey = async () => {
       const encoder = new TextEncoder();
-      const keyString = await getKey();
+      const keyString = await getKeyString();
       const keyBytes = encoder.encode(keyString);
       const hashBuffer = await window.crypto.subtle.digest("SHA-256", keyBytes);
       const userId = Array.from(new Uint8Array(hashBuffer))
@@ -192,11 +192,11 @@ function Card({
   const y = useTransform(scrollYProgress, [0, 0.5], [350 + 5 * index, 0]);
   const z = useTransform(scrollYProgress, [0.5, 1], [0, -1200]);
   const zIndex = useTransform(() => (scrollYProgress.get() ? index : -index));
-  
+
   const date = new Date(dateStringISO);
   const dateStringLocal = displayDateFormat.format(date);
 
-  return (
+  return dateStringISO !== placeholderDate.toISOString().split("T")[0] ? (
     <motion.div
       style={{ rotateX, y, z, zIndex }}
       initial={{ opacity: 0 }}
@@ -226,6 +226,19 @@ function Card({
       </div>
       <div className="card-vline" style={{ borderColor: "lightgray" }} />
     </motion.div>
+  ) : (
+    <motion.div
+      style={{ rotateX, y, z, zIndex }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1, transition: { duration: 1 } }}
+      className="placeholder-card"
+    >
+      <div className="placeholder-card-text">
+        {
+          "More cards will be added for each day that you make an entry. Have fun!"
+        }
+      </div>
+    </motion.div>
   );
 }
 
@@ -243,10 +256,10 @@ function InputRow({
       headers: {
         "content-type": "application/json",
       },
-      body: JSON.stringify({
-        title: control.inputText,
-      }),
+      body: JSON.stringify({ title: await encryptTitle(control.inputText) }), // for future reference, you forgot to await this
     };
+
+    console.log(encryptTitle(control.inputText));
 
     const response = await fetch(
       `${BASE_URL}/users/${control.userId}/new-entry`,
@@ -338,7 +351,7 @@ async function getEntries(userId: string): Promise<NotebookEntry[]> {
     const { entries } = await response.json();
     return entries.map((entry: NotebookEntry) => ({
       id: entry.id,
-      title: entry.title,
+      title: decryptTitle(entry.title),
       created_at: new Date(entry.created_at),
       updated_at: new Date(entry.updated_at),
       deleted_at: entry.deleted_at ? new Date(entry.deleted_at) : null,
@@ -349,7 +362,7 @@ async function getEntries(userId: string): Promise<NotebookEntry[]> {
   return [];
 }
 
-async function getKey() {
+async function getKeyString() {
   const storedKey = localStorage.getItem("key");
   if (storedKey) {
     return storedKey;
@@ -367,6 +380,56 @@ async function getKey() {
   const keyString = JSON.stringify(jwk);
   localStorage.setItem("key", keyString);
   return keyString;
+}
+
+async function getKey() {
+  const keyString = await getKeyString();
+  const key = await window.crypto.subtle.importKey(
+    "jwk",
+    JSON.parse(keyString),
+    { name: "AES-GCM", length: 256 },
+    true,
+    ["encrypt", "decrypt"],
+  );
+  return key;
+}
+
+interface EncryptedTitle {
+  iv: number[];
+  ciphertext: number[];
+}
+
+async function encryptTitle(title: string) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const encoder = new TextEncoder();
+
+  const key = await getKey();
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    key,
+    encoder.encode(title),
+  );
+
+  return JSON.stringify({
+    iv: Array.from(iv),
+    ciphertext: Array.from(new Uint8Array(ciphertext)),
+  });
+}
+
+async function decryptTitle(encryptedTitle: string) {
+  const { iv, ciphertext } = JSON.parse(encryptedTitle) as EncryptedTitle;
+  const decoder = new TextDecoder();
+
+  const key = await getKey();
+  const plaintext = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: new Uint8Array(iv) },
+    key,
+    new Uint8Array(ciphertext),
+  );
+
+  console.log(decoder.decode(plaintext));
+
+  return decoder.decode(plaintext);
 }
 
 // function ComparisonTable({

@@ -21,6 +21,7 @@ app.use(
 app.post("/api/users/:id/new-entry", async (req, res) => {
   const userId = req.params.id;
   const { title } = req.body;
+  console.log(title);
   await db.createNotebookEntry(userId, title);
   return res.status(200).json({ message: "Entry created" });
 });
