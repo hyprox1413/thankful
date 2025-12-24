@@ -8,6 +8,8 @@ const config = {
   nodeEnv: process.env.NODE_ENV || "development",
 };
 
+console.log("Config:", config);
+
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -19,14 +21,15 @@ app.use(
 );
 
 app.post("/api/users/:id/new-entry", async (req, res) => {
+  console.log("incoming POST");
   const userId = req.params.id;
   const { title } = req.body;
-  console.log(title);
   await db.createNotebookEntry(userId, title);
   return res.status(200).json({ message: "Entry created" });
 });
 
 app.get("/api/users/:id/get-entries", async (req, res) => {
+  console.log("incoming GET");
   const userId = req.params.id;
   const entries = await db.getNotebookEntries(userId);
   return res.status(200).json({ entries });

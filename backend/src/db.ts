@@ -2,10 +2,10 @@ import { Client } from "pg";
 import { createSemanticDiagnosticsBuilderProgram } from "typescript";
 
 // hardcode for now
-const client = new Client({
+const client = new Client(process.env.POSTGRES_CONN_STRING ?? {
   user: "thankful",
-  password: process.env.POSTGRES_PASSWORD ?? "password",
-  host: process.env.POSTGRES_HOST ?? "db",
+  password: "password",
+  host: "db",
   port: 5432,
   database: "thankful",
 });
