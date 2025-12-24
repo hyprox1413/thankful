@@ -47,7 +47,7 @@ if (version < 1) {
 
   await client.query(`CREATE TABLE IF NOT EXISTS notebook_entries (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER NOT NULL,
+    user_id TEXT NOT NULL,
     title VARCHAR(50) NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -65,7 +65,7 @@ if (version < 1) {
 export async function createNotebookEntry(
   user_id: string,
   title: string,
-): Promise<NotebookEntry | undefined> {
+): Promise<NotebookEntry> {
   const result = await client.query<NotebookEntry>(
     `
     INSERT INTO notebook_entries (user_id, title)
@@ -79,7 +79,7 @@ export async function createNotebookEntry(
 
 export async function getNotebookEntries(
   user_id: string,
-): Promise<NotebookEntry[] | undefined> {
+): Promise<NotebookEntry[]> {
   const result = await client.query<NotebookEntry>(
     `
     SELECT id, user_id, title, created_at, updated_at, deleted_at

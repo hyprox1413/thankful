@@ -7,30 +7,29 @@ import {
 } from "motion/react";
 import { useState, useRef, useEffect } from "react";
 import "./App.css";
-import { v4 as uuidv4 } from "uuid";
 import type { NotebookEntry } from "./utils.tsx";
 // import * as utils from "./utils.tsx";
 
 const currentDate = new Date();
 const currentDateString = currentDate.toLocaleDateString("en-US");
-const userId = "1";
 
 const BASE_URL = "http://localhost:3000/api";
 
 // const SEARCH_THRESHOLD = 0.8;
 
 // database query should return in descending order of date
-const ENTRIES: NotebookEntry[] = Array.from(Array(10).keys()).map((i) => ({
-  id: uuidv4(),
-  user_id: "1",
-  title: "foo",
-  created_at: new Date(10 - i, 0),
-  updated_at: new Date(10 - i, 0),
-  deleted_at: null,
-}));
+// const ENTRIES: NotebookEntry[] = Array.from(Array(10).keys()).map((i) => ({
+//   id: uuidv4(),
+//   user_id: "1",
+//   title: "foo",
+//   created_at: new Date(10 - i, 0),
+//   updated_at: new Date(10 - i, 0),
+//   deleted_at: null,
+// }));
 
 type ControlState = {
   type: "idle" | "comparing" | "awaiting";
+  userId: string;
   inputText: string;
   entries: NotebookEntry[];
 };
@@ -43,12 +42,32 @@ type ControlStateUpdate = ((
 export default function App() {
   const [control, setControl] = useState({
     type: "idle",
+    userId: "",
     inputText: "",
-    entries: ENTRIES,
+    entries: [],
   } as ControlState);
-
   const ref = useRef(null);
   const scrollYProgressByDate = useRef(new Map<string, MotionValue<number>>());
+
+  useEffect(() => {
+    const setupKey = async () => {
+      const encoder = new TextEncoder();
+      const keyString = await getKey();
+      const keyBytes = encoder.encode(keyString);
+      const hashBuffer = await window.crypto.subtle.digest("SHA-256", keyBytes);
+      const userId = Array.from(new Uint8Array(hashBuffer))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+      const entries = await getEntries(userId);
+      setControl((prev) => ({
+        ...prev,
+        userId,
+        inputText: "",
+        entries,
+      }));
+    };
+    setupKey();
+  }, []);
 
   const uniqueEntryDates = new Set(
     control.entries
@@ -173,7 +192,8 @@ function Card({
   return (
     <motion.div
       style={{ rotateX, y, z, zIndex }}
-      // style={{ opacity: alpha }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1, transition: { duration: 1 } }}
       className="card"
     >
       <div
@@ -220,13 +240,15 @@ function InputRow({
       }),
     };
 
-    const response = await fetch(`${BASE_URL}/users/${userId}/new-entry`, options);
-    const data = await response.json();
-    console.log(data);
-    
-    const entries = await getEntries();
-    
+    const response = await fetch(
+      `${BASE_URL}/users/${control.userId}/new-entry`,
+      options,
+    );
+
     if (response.ok) {
+      const data = await response.json();
+      console.log(data);
+      const entries = await getEntries(control.userId);
       setControl((prev: ControlState) => ({
         ...prev,
         inputText: "",
@@ -289,7 +311,7 @@ function EntryTable({ entries }: { entries: NotebookEntry[] }) {
   );
 }
 
-async function getEntries(): Promise<NotebookEntry[]> {
+async function getEntries(userId: string): Promise<NotebookEntry[]> {
   const options = {
     method: "GET",
     headers: {
@@ -298,8 +320,11 @@ async function getEntries(): Promise<NotebookEntry[]> {
     },
   };
 
-  const response = await fetch(`${BASE_URL}/users/${userId}/get-entries`, options);
-  
+  const response = await fetch(
+    `${BASE_URL}/users/${userId}/get-entries`,
+    options,
+  );
+
   if (response.ok) {
     console.log("Entries retrieved successfully!");
     const { entries } = await response.json();
@@ -311,9 +336,29 @@ async function getEntries(): Promise<NotebookEntry[]> {
       deleted_at: entry.deleted_at ? new Date(entry.deleted_at) : null,
     }));
   }
-  
+
   console.log("Entries retrieval failed.");
   return [];
+}
+
+async function getKey() {
+  const storedKey = localStorage.getItem("key");
+  if (storedKey) {
+    return storedKey;
+  }
+  const key = await window.crypto.subtle.generateKey(
+    {
+      name: "AES-GCM",
+      length: 256,
+    },
+    true,
+    ["encrypt", "decrypt"],
+  );
+  console.log(key);
+  const jwk = await window.crypto.subtle.exportKey("jwk", key);
+  const keyString = JSON.stringify(jwk);
+  localStorage.setItem("key", keyString);
+  return keyString;
 }
 
 // function ComparisonTable({
