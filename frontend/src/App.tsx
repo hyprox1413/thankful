@@ -11,7 +11,13 @@ import type { NotebookEntry } from "./utils.tsx";
 // import * as utils from "./utils.tsx";
 
 const currentDate = new Date();
-const currentDateString = currentDate.toLocaleDateString("en-US");
+const placeholderDate = new Date(1900);
+const displayDateFormat = new Intl.DateTimeFormat(undefined, {
+  weekday: "long",
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+});
 
 const BASE_URL = "http://localhost:3000/api";
 
@@ -71,24 +77,22 @@ export default function App() {
 
   const uniqueEntryDates = new Set(
     control.entries
-      .filter(
-        (entry) => entry.created_at.toLocaleDateString() !== currentDateString,
-      )
-      .map((entry) => entry.created_at.toLocaleDateString()),
+      .map((entry) => entry.created_at)
+      .concat([currentDate, placeholderDate])
+      .map((date) => date.toISOString().split("T")[0]),
   );
-  uniqueEntryDates.add(currentDateString);
 
   const sortedEntryDates = Array.from(uniqueEntryDates);
   sortedEntryDates.sort();
   sortedEntryDates.reverse();
 
-  const dayTables = sortedEntryDates.map((dateString, index) => (
+  const dayTables = sortedEntryDates.map((dateStringISO, index) => (
     <Card
-      key={dateString}
+      key={dateStringISO}
       control={control}
       setControl={setControl}
       scrollYProgressByDate={scrollYProgressByDate}
-      dateString={dateString}
+      dateStringISO={dateStringISO}
       index={index}
     />
   ));
@@ -170,24 +174,33 @@ function Card({
   control,
   setControl,
   scrollYProgressByDate,
-  dateString,
+  dateStringISO,
   index,
 }: {
   control: ControlState;
   setControl: ControlStateUpdate;
   scrollYProgressByDate: React.RefObject<Map<string, MotionValue<number>>>;
-  dateString: string;
+  dateStringISO: string;
   index: number;
 }) {
   const defaultScrollYProgress = useMotionValue(0);
 
   const scrollYProgress =
-    scrollYProgressByDate.current.get(dateString) ?? defaultScrollYProgress;
+    scrollYProgressByDate.current.get(dateStringISO) ?? defaultScrollYProgress;
 
   const rotateX = useTransform(scrollYProgress, [0, 0.5], [90, 0]);
   const y = useTransform(scrollYProgress, [0, 0.5], [350 + 5 * index, 0]);
   const z = useTransform(scrollYProgress, [0.5, 1], [0, -1200]);
   const zIndex = useTransform(() => (scrollYProgress.get() ? index : -index));
+  
+  const date = new Date(dateStringISO);
+  const options = {
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  };
+  const dateStringLocal = displayDateFormat.format(date);
 
   return (
     <motion.div
@@ -199,9 +212,9 @@ function Card({
       <div
         style={{ position: "relative", height: "100%", overflowY: "scroll" }}
       >
-        <DateRow dateString={dateString} />
+        <DateRow dateString={dateStringLocal} />
         <div className="card-hline" style={{ borderColor: "lightcoral" }} />
-        {dateString === currentDateString && (
+        {dateStringISO === currentDate.toISOString().split("T")[0] && (
           <>
             <InputRow control={control} setControl={setControl} />
             <div
@@ -212,7 +225,8 @@ function Card({
         )}
         <EntryTable
           entries={control.entries.filter(
-            (entry) => entry.created_at.toLocaleDateString() === dateString,
+            (entry) =>
+              entry.created_at.toISOString().split("T")[0] === dateStringISO,
           )}
         />
       </div>
