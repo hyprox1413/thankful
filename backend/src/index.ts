@@ -3,7 +3,7 @@ import cors from "cors";
 import * as db from "./db.js";
 
 const config = {
-  port: process.env.PORT || 3000,
+  port: process.env.PORT || 80,
   corsOrigin: process.env.CORS_ORIGIN || "http://localhost:5173",
   nodeEnv: process.env.NODE_ENV || "development",
 };
@@ -33,6 +33,11 @@ app.get("/api/users/:id/get-entries", async (req, res) => {
   const userId = req.params.id;
   const entries = await db.getNotebookEntries(userId);
   return res.status(200).json({ entries });
+});
+
+app.get("/api/test", async (req, res) => {
+  console.log("test");
+  return res.sendStatus(200);
 });
 
 app.listen(config.port, () =>
