@@ -2,13 +2,15 @@ import { Client } from "pg";
 import { createSemanticDiagnosticsBuilderProgram } from "typescript";
 
 // hardcode for now
-const client = new Client(process.env.POSTGRES_CONN_STRING ?? {
-  user: "thankful",
-  password: "password",
-  host: "db",
-  port: 5432,
-  database: "thankful",
-});
+const client = new Client(
+  process.env.POSTGRES_CONN_STRING ?? {
+    user: "thankful",
+    password: "password",
+    host: "db",
+    port: 5432,
+    database: "thankful",
+  },
+);
 
 await client.connect();
 
@@ -32,11 +34,11 @@ console.log(now.toTimeString(), ": version", version);
 
 export interface NotebookEntry {
   id: string;
-  user_id: string;
+  userId: string;
   title: string;
-  created_at: Date;
-  updated_at: Date;
-  deleted_at: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 if (version < 1) {
@@ -60,32 +62,83 @@ if (version < 1) {
   );
 }
 
-export async function createNotebookEntry(
-  user_id: string,
-  title: string,
-): Promise<NotebookEntry> {
-  const result = await client.query<NotebookEntry>(
-    `
-    INSERT INTO notebook_entries (user_id, title)
-    VALUES ($1, $2)
-    RETURNING *;`,
-    [user_id, title],
-  );
-  const entry = result.rows[0];
-  return entry;
+if (version < 2) {
+  await client.query(`UPDATE schema_version SET version = 2`);
+
+  await client.query(`
+    ALTER TABLE notebook_entries
+    RENAME COLUMN user_id TO "userId";
+    `);
+  await client.query(`
+    ALTER TABLE notebook_entries
+    RENAME COLUMN created_at TO "createdAt";
+    `);
+  await client.query(`
+    ALTER TABLE notebook_entries
+    RENAME COLUMN updated_at TO "updatedAt";
+    `);
+  await client.query(`
+    ALTER TABLE notebook_entries
+    RENAME COLUMN deleted_at TO "deletedAt";
+    `);
 }
 
 export async function getNotebookEntries(
-  user_id: string,
+  userId: string,
 ): Promise<NotebookEntry[]> {
-  const result = await client.query<NotebookEntry>(
-    `
-    SELECT id, user_id, title, created_at, updated_at, deleted_at
-    FROM notebook_entries
-    WHERE user_id = $1 AND deleted_at IS NULL
-    ORDER BY created_at DESC;
-  `,
-    [user_id],
-  );
-  return result.rows;
+  try {
+    const result = await client.query<NotebookEntry>(
+      `
+      SELECT "id", "userId", "title", "createdAt", "updatedAt", "deletedAt"
+      FROM notebook_entries
+      WHERE "userId" = $1 AND "deletedAt" IS NULL
+      ORDER BY "createdAt" DESC;
+      `,
+      [userId],
+    );
+    return result.rows;
+  } catch (err) {
+    console.error(err);
+  }
+  return [];
+}
+
+export async function createNotebookEntry(
+  userId: string,
+  title: string,
+): Promise<NotebookEntry[]> {
+  try {
+    const result = await client.query<NotebookEntry>(
+      `
+      INSERT INTO notebook_entries (userId, title)
+      VALUES ($1, $2)
+      RETURNING "id", "userId", "title", "createdAt", "updatedAt", "deletedAt";
+      `,
+      [userId, title],
+    );
+    return result.rows;
+  } catch (err) {
+    console.error(err);
+  }
+  return [];
+}
+
+export async function deleteNotebookEntry(
+  userId: string,
+  id: string,
+): Promise<NotebookEntry[]> {
+  try {
+    const result = await client.query<NotebookEntry>(
+      `
+    DELETE FROM notebook_entries WHERE
+    "userId" = $1 AND "id" = $2
+    RETURNING "id", "userId", "title", "createdAt", "updatedAt", "deletedAt";
+    `,
+      [userId, id],
+    );
+    return result.rows;
+  } catch (err) {
+    console.error(err);
+  }
+  return [];
 }

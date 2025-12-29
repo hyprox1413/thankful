@@ -83,7 +83,7 @@ export default function App() {
 
   const uniqueEntryDates = new Set(
     control.entries
-      .map((entry) => entry.created_at)
+      .map((entry) => entry.createdAt)
       .concat([currentDate, placeholderDate])
       .map((date) => date.toISOString().split("T")[0]),
   );
@@ -228,7 +228,7 @@ function Card({
         <EntryTable
           entries={control.entries.filter(
             (entry) =>
-              entry.created_at.toISOString().split("T")[0] === dateStringISO,
+              entry.createdAt.toISOString().split("T")[0] === dateStringISO,
           )}
         />
       </div>
@@ -259,27 +259,7 @@ function InputRow({
 }) {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const options = {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({ title: await encryptTitle(control.inputText) }), // for future reference, you forgot to await this
-    };
-
-    const response = await fetch(
-      `${BASE_URL}/users/${control.userId}/new-entry`,
-      options,
-    );
-
-    if (response.ok) {
-      const entries = await getEntries(control.userId);
-      setControl((prev: ControlState) => ({
-        ...prev,
-        inputText: "",
-        entries,
-      }));
-    }
+    createEntry(control.userId, control.inputText, setControl);
   };
 
   return (
@@ -347,10 +327,7 @@ async function getEntries(userId: string): Promise<NotebookEntry[]> {
     },
   };
 
-  const response = await fetch(
-    `${BASE_URL}/users/${userId}/get-entries`,
-    options,
-  );
+  const response = await fetch(`${BASE_URL}/users/${userId}/entries`, options);
 
   if (response.ok) {
     console.log("Entries retrieved successfully!");
@@ -358,14 +335,69 @@ async function getEntries(userId: string): Promise<NotebookEntry[]> {
     return entries.map((entry: NotebookEntry) => ({
       id: entry.id,
       title: decryptTitle(entry.title),
-      created_at: new Date(entry.created_at),
-      updated_at: new Date(entry.updated_at),
-      deleted_at: entry.deleted_at ? new Date(entry.deleted_at) : null,
+      createdAt: new Date(entry.createdAt),
+      updatedAt: new Date(entry.updatedAt),
+      deletedAt: entry.deletedAt ? new Date(entry.deletedAt) : null,
     }));
   }
 
   console.log("Entries retrieval failed.");
   return [];
+}
+
+async function createEntry(
+  userId: string,
+  inputText: string,
+  setControl: ControlStateUpdate,
+) {
+  const options = {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({ title: await encryptTitle(inputText) }), // for future reference, you forgot to await this
+  };
+
+  const response = await fetch(`${BASE_URL}/users/${userId}/entries`, options);
+
+  if (response.ok) {
+    const entries = await getEntries(userId);
+    setControl((prev: ControlState) => ({
+      ...prev,
+      inputText: "",
+      entries,
+    }));
+    return;
+  }
+  
+  console.log("Entry creation failed.");
+}
+
+async function deleteEntry(
+  userId: string,
+  entryId: string,
+  setControl: ControlStateUpdate,
+) {
+  const options = {
+    method: "DELETE",
+    headers: {
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({ entryId }), // for future reference, you forgot to await this
+  };
+
+  const response = await fetch(`${BASE_URL}/users/${userId}/entries`, options);
+
+  if (response.ok) {
+    const entries = await getEntries(userId);
+    setControl((prev: ControlState) => ({
+      ...prev,
+      entries,
+    }));
+    return;
+  }
+  
+  console.log("Entry deletion failed.");
 }
 
 // function ComparisonTable({

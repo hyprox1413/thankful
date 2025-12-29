@@ -20,7 +20,14 @@ app.use(
   }),
 );
 
-app.post("/api/users/:id/new-entry", async (req, res) => {
+app.get("/api/users/:id/entries", async (req, res) => {
+  console.log("incoming GET");
+  const userId = req.params.id;
+  const entries = await db.getNotebookEntries(userId);
+  return res.status(200).json({ entries });
+});
+
+app.post("/api/users/:id/entries", async (req, res) => {
   console.log("incoming POST");
   const userId = req.params.id;
   const { title } = req.body;
@@ -28,10 +35,19 @@ app.post("/api/users/:id/new-entry", async (req, res) => {
   return res.status(200).json({ message: "Entry created" });
 });
 
-app.get("/api/users/:id/get-entries", async (req, res) => {
-  console.log("incoming GET");
+// app.patch("/api/users/:id/entries", async (req, res) => {
+//   console.log("incoming PATCH");
+//   const userId = req.params.id;
+//   const { title, id } = req.body;
+//   await db.updateNotebookEntry(userId, id, title);
+//   return res.status(200).json({ message: "Entry modified" });
+// });
+
+app.delete("/api/users/:id/entries", async (req, res) => {
+  console.log("incoming DELETE");
   const userId = req.params.id;
-  const entries = await db.getNotebookEntries(userId);
+  const { id } = req.body;
+  const entries = await db.deleteNotebookEntry(userId, id);
   return res.status(200).json({ entries });
 });
 

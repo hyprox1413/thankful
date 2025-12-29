@@ -1,10 +1,10 @@
 export interface NotebookEntry {
   id: string;
-  user_id: string;
+  userId: string;
   title: string;
-  created_at: Date;
-  updated_at: Date;
-  deleted_at: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
 }
 
 export function editDistance(s: string, t: string) {
