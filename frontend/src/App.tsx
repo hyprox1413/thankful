@@ -19,7 +19,10 @@ const displayDateFormat = new Intl.DateTimeFormat(undefined, {
   day: "numeric",
 });
 
-const BASE_URL = import.meta.env.VITE_THANKFUL_BACKEND_BASE_URL ?? "http://localhost:3000/api"
+const BASE_URL =
+  import.meta.env.VITE_THANKFUL_BACKEND_BASE_URL ?? "http://localhost:3000/api";
+
+const MAX_INPUT_LENGTH = 50;
 
 // const SEARCH_THRESHOLD = 0.8;
 
@@ -308,7 +311,10 @@ function InputRow({
           value={control.inputText}
           placeholder="New entry..."
           onChange={(e) =>
-            setControl((prev) => ({ ...prev, inputText: e.target.value }))
+            setControl((prev) => ({
+              ...prev,
+              inputText: e.target.value.slice(0, MAX_INPUT_LENGTH),
+            }))
           }
         />
       </form>
