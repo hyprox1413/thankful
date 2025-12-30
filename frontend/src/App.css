@@ -91,6 +91,12 @@ input:focus {
     outline: none;
 }
 
+.card-row-space {
+    position: relative;
+    width: 100%;
+    height: 2rem;
+}
+
 .card-content {
     padding: var(--line-padding);
     padding-left: calc(var(--line-left-padding) + 0.2rem);

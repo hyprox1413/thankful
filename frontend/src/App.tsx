@@ -211,27 +211,24 @@ function Card({
       animate={{ opacity: 1, transition: { duration: 1 } }}
       className="card"
     >
-      <div
-        style={{ position: "relative", height: "100%", overflowY: "scroll" }}
-      >
+      <div className="card-row-space">
         <DateRow dateString={dateStringLocal} />
         <div className="card-hline" style={{ borderColor: "lightcoral" }} />
-        {dateStringISO === currentDate.toISOString().split("T")[0] && (
-          <>
-            <InputRow control={control} setControl={setControl} />
-            <div
-              className="card-hline"
-              style={{ borderColor: "lightskyblue" }}
-            />
-          </>
-        )}
-        <EntryTable
-          entries={control.entries.filter(
-            (entry) =>
-              entry.createdAt.toISOString().split("T")[0] === dateStringISO,
-          )}
-        />
       </div>
+      {dateStringISO === currentDate.toISOString().split("T")[0] && (
+        <div className="card-row-space">
+          <InputRow control={control} setControl={setControl} />
+          <div className="card-hline" style={{ borderColor: "lightskyblue" }} />
+        </div>
+      )}
+      <EntryTable
+        entries={control.entries.filter(
+          (entry) =>
+            entry.createdAt.toISOString().split("T")[0] === dateStringISO,
+        )}
+        control={control}
+        setControl={setControl}
+      />
       <div className="card-vline" style={{ borderColor: "lightgray" }} />
     </motion.div>
   ) : (
@@ -306,11 +303,19 @@ function DateRow({ dateString }: { dateString: string }) {
   return <div className="card-title">{dateString}</div>;
 }
 
-function EntryTable({ entries }: { entries: NotebookEntry[] }) {
+function EntryTable({
+  entries,
+  control,
+  setControl,
+}: {
+  entries: NotebookEntry[];
+  control: ControlState;
+  setControl: ControlStateUpdate;
+}) {
   return (
     <>
       {entries.map((entry) => (
-        <div key={entry.id}>
+        <div className="card-row-space">
           <div className="card-content">{entry.title}</div>
           <div className="card-hline" style={{ borderColor: "lightskyblue" }} />
         </div>
@@ -369,7 +374,7 @@ async function createEntry(
     }));
     return;
   }
-  
+
   console.log("Entry creation failed.");
 }
 
@@ -396,7 +401,7 @@ async function deleteEntry(
     }));
     return;
   }
-  
+
   console.log("Entry deletion failed.");
 }
 
