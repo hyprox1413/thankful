@@ -48,6 +48,7 @@ html, body {
 
 .card {
     width: var(--card-width);
+    max-width: 75%;
     height: var(--card-height);
     box-sizing: border-box;
     position: absolute;
@@ -55,7 +56,7 @@ html, body {
     background-color: #F0F0F0;
     
     top: calc(40% - var(--card-height) / 2);
-    left: calc(50% - var(--card-width) / 2);
+    left: 50%;
     
     transform-style: preserve-3d;
     --line-padding: 0.6rem;
@@ -119,12 +120,7 @@ input:focus {
     position: absolute;
 }
 
-.placeholder-card {
-    width: var(--card-width);
-    height: var(--card-height);
-    box-sizing: border-box;
-    position: absolute;
-    
+.card.placeholder {
     background-color: rgba(255, 255, 255, 0.4);
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(10px);
@@ -133,13 +129,6 @@ input:focus {
     
     display: grid;
     place-items: center;
-    
-    top: calc(40% - var(--card-height) / 2);
-    left: calc(50% - var(--card-width) / 2);
-    
-    transform-style: preserve-3d;
-    --line-padding: 0.6rem;
-    --line-left-padding: 3rem;
 }
 
 .placeholder-card-text {

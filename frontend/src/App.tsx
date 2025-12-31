@@ -22,7 +22,7 @@ const displayDateFormat = new Intl.DateTimeFormat(undefined, {
 const BASE_URL =
   import.meta.env.VITE_THANKFUL_BACKEND_BASE_URL ?? "http://localhost:3000/api";
 
-const MAX_INPUT_LENGTH = 50;
+const MAX_INPUT_LENGTH = 30;
 
 // const SEARCH_THRESHOLD = 0.8;
 
@@ -197,6 +197,7 @@ function Card({
     scrollYProgressByDate.current.get(dateStringISO) ?? defaultScrollYProgress;
 
   const rotateX = useTransform(scrollYProgress, [0, 0.5], [90, 0]);
+  const x = "-50%";
   const y = useTransform(scrollYProgress, [0, 0.5], [350 + 5 * index, 0]);
   const z = useTransform(scrollYProgress, [0.5, 1], [0, -1200]);
   const zIndex = useTransform(() => (scrollYProgress.get() ? index : -index));
@@ -206,7 +207,7 @@ function Card({
 
   return dateStringISO !== placeholderDate.toISOString().split("T")[0] ? (
     <motion.div
-      style={{ rotateX, y, z, zIndex }}
+      style={{ rotateX, x, y, z, zIndex }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: 1 } }}
       className="card"
@@ -233,10 +234,10 @@ function Card({
     </motion.div>
   ) : (
     <motion.div
-      style={{ rotateX, y, z, zIndex }}
+      style={{ rotateX, x, y, z, zIndex }}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: 1 } }}
-      className="placeholder-card"
+      className="card placeholder"
     >
       <div className="placeholder-card-text">
         {
@@ -318,6 +319,7 @@ function EntryTable({
         <div className="card-row-space">
           <div className="card-content">{entry.title}</div>
           <div className="card-hline" style={{ borderColor: "lightskyblue" }} />
+          <button style={{ position: "absolute", right: 0 }} />
         </div>
       ))}
     </>
