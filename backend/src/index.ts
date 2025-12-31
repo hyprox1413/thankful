@@ -46,8 +46,11 @@ app.post("/api/users/:id/entries", async (req, res) => {
 app.delete("/api/users/:id/entries", async (req, res) => {
   console.log("incoming DELETE");
   const userId = req.params.id;
-  const { id } = req.body;
-  const entries = await db.deleteNotebookEntry(userId, id);
+  const { entryId } = req.body;
+  const entries = await db.deleteNotebookEntry(userId, entryId);
+  if (entries.length === 0) {
+    return res.status(404).json({ message: "Entry not found" });
+  }
   return res.status(200).json({ entries });
 });
 

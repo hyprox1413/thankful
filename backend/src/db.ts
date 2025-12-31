@@ -110,7 +110,7 @@ export async function createNotebookEntry(
   try {
     const result = await client.query<NotebookEntry>(
       `
-      INSERT INTO notebook_entries (userId, title)
+      INSERT INTO notebook_entries ("userId", "title")
       VALUES ($1, $2)
       RETURNING "id", "userId", "title", "createdAt", "updatedAt", "deletedAt";
       `,
@@ -125,7 +125,7 @@ export async function createNotebookEntry(
 
 export async function deleteNotebookEntry(
   userId: string,
-  id: string,
+  entryId: string,
 ): Promise<NotebookEntry[]> {
   try {
     const result = await client.query<NotebookEntry>(
@@ -134,7 +134,7 @@ export async function deleteNotebookEntry(
     "userId" = $1 AND "id" = $2
     RETURNING "id", "userId", "title", "createdAt", "updatedAt", "deletedAt";
     `,
-      [userId, id],
+      [userId, entryId],
     );
     return result.rows;
   } catch (err) {

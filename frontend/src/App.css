@@ -1,4 +1,5 @@
-html, body {
+html,
+body {
     height: 100%; /* Ensures they take up the full viewport height */
     margin: 0;
     padding: 0;
@@ -8,10 +9,10 @@ html, body {
 #root {
     height: 100%;
     width: 100%;
-    
+
     --card-width: 30rem;
     --card-height: 22rem;
-    
+
     perspective: 50rem;
 }
 
@@ -20,18 +21,20 @@ html, body {
     width: 100%;
     height: 100%;
     box-sizing: border-box;
-    
+
     scroll-snap-type: y mandatory;
     overflow-y: scroll;
 }
 
 .dummy-card-container {
+    pointer-events: none;
+    
     display: flex;
     gap: 5rem;
     flex-direction: column;
     align-items: center;
     box-sizing: border-box;
-    
+
     transform-style: preserve-3d;
 }
 
@@ -40,9 +43,9 @@ html, body {
     width: var(--card-width);
     height: var(--card-height);
     box-sizing: border-box;
-    
+
     opacity: 0;
-    
+
     background-color: black;
 }
 
@@ -52,12 +55,12 @@ html, body {
     height: var(--card-height);
     box-sizing: border-box;
     position: absolute;
-    
-    background-color: #F0F0F0;
-    
+
+    background-color: #f0f0f0;
+
     top: calc(40% - var(--card-height) / 2);
     left: 50%;
-    
+
     transform-style: preserve-3d;
     --line-padding: 0.6rem;
     --line-left-padding: 3rem;
@@ -98,6 +101,19 @@ input:focus {
     height: 2rem;
 }
 
+.entry-delete-button {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    
+    padding-top: 0.15rem;
+    padding-bottom: 0.15rem;
+    padding-left: 0.4rem;
+    padding-right: 0.4rem;
+    font-size: x-small;
+}
+
 .card-content {
     padding: var(--line-padding);
     padding-left: calc(var(--line-left-padding) + 0.2rem);
@@ -125,8 +141,8 @@ input:focus {
     backdrop-filter: blur(2px);
     -webkit-backdrop-filter: blur(10px);
     border-style: dashed;
-    border-color: #C0C0C0;
-    
+    border-color: #c0c0c0;
+
     display: grid;
     place-items: center;
 }

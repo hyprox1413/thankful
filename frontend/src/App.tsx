@@ -317,9 +317,16 @@ function EntryTable({
     <>
       {entries.map((entry) => (
         <div className="card-row-space">
+          <button
+            className="entry-delete-button"
+            onClick={async () => {
+              deleteEntry(control.userId, entry.id, setControl);
+            }}
+          >
+            X
+          </button>
           <div className="card-content">{entry.title}</div>
           <div className="card-hline" style={{ borderColor: "lightskyblue" }} />
-          <button style={{ position: "absolute", right: 0 }} />
         </div>
       ))}
     </>
